@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RisingForce — Code, Tools & Projects</title>
+<meta name="description" content="Code, programs, and tools by RisingForce. Open source developer sharing projects and creations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0d12;--bg2:#0f1419;--bg3:#151d27;--bg4:#1c2a38;
+--text:#e2e8f0;--text2:#8899aa;--text3:#5a6d7e;
+--accent:#0ea5e9;--accent2:#67e8f9;--accent-glow:rgba(14,165,233,0.12);
+--green:#00d68f;--border:#1e2d3d;
+--card-bg:#0f1720;--card-hover:#162230;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+::selection{background:var(--accent);color:#fff}
+a{color:var(--accent2);text-decoration:none;transition:color 0.2s}
+a:hover{color:var(--accent)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;backdrop-filter:blur(20px);background:rgba(10,10,15,0.8);border-bottom:1px solid transparent;transition:all 0.3s}
+nav.scrolled{border-bottom-color:var(--border);background:rgba(10,10,15,0.95)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:18px;color:var(--text);display:flex;align-items:center;gap:8px}
+.nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);box-shadow:0 0 12px var(--accent)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:var(--text2);font-size:14px;font-weight:500;letter-spacing:0.5px;transition:color 0.2s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a.active{color:var(--accent2)}
+
+/* Cursor glow */
+.cursor-glow{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:opacity 0.3s}
+
+/* Floating code background */
+.code-bg{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.code-line{position:absolute;font-family:'JetBrains Mono',monospace;font-size:13px;color:rgba(14,165,233,0.07);white-space:nowrap;animation:floatCode linear infinite}
+@keyframes floatCode{0%{transform:translateY(100vh) translateX(0)}100%{transform:translateY(-100px) translateX(30px)}}
+
+/* Particle canvas */
+#particle-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 24px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,var(--accent-glow) 0%,transparent 50%);animation:heroGlow 8s ease-in-out infinite alternate}
+@keyframes heroGlow{0%{transform:translate(0,0)}100%{transform:translate(5%,3%)}}
+.hero-content{max-width:800px;text-align:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:24px;background:var(--bg3);border:1px solid var(--border);font-size:13px;color:var(--text2);margin-bottom:32px;font-family:'JetBrains Mono',monospace}
+.hero-badge .pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,214,143,0.4)}50%{opacity:0.8;box-shadow:0 0 0 8px rgba(0,214,143,0)}}
+.hero h1{font-size:clamp(40px,7vw,72px);font-weight:800;line-height:1.1;margin-bottom:20px;background:linear-gradient(135deg,var(--text) 0%,var(--accent2) 40%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:'JetBrains Mono',monospace}
+.terminal-cursor{animation:blink 1.2s infinite;color:var(--accent2)}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.hero p{font-size:clamp(16px,2vw,20px);color:var(--text2);max-width:600px;margin:0 auto 40px;line-height:1.7}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.25s;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 20px rgba(14,165,233,0.3)}
+.btn-primary:hover{background:#38bdf8;transform:translateY(-2px);box-shadow:0 6px 30px rgba(14,165,233,0.4);color:#fff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg4);border-color:var(--accent);transform:translateY(-2px);color:var(--text)}
+.hero-stats{display:flex;gap:48px;justify-content:center;margin-top:60px}
+.stat{text-align:center}
+.stat-num{font-size:28px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace}
+.stat-label{font-size:13px;color:var(--text2);margin-top:4px}
+
+/* Sections */
+section{padding:100px 24px}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:60px}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.section-title{font-size:clamp(28px,4vw,42px);font-weight:700;margin-bottom:16px}
+.section-desc{color:var(--text2);max-width:600px;margin:0 auto;font-size:16px}
+
+/* Projects */
+.project-filters{display:flex;justify-content:center;gap:12px;margin-bottom:48px}
+.filter-btn{padding:8px 24px;border-radius:24px;font-size:14px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.3s;font-family:'JetBrains Mono',monospace}
+.filter-btn:hover{border-color:var(--accent);color:var(--text)}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:24px}
+.project-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.4s;cursor:pointer;position:relative;transform-style:preserve-3d;perspective:1000px}
+.project-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 40px rgba(14,165,233,0.1)}
+.project-card.filtered-out{opacity:0;transform:scale(0.8);pointer-events:none}
+.project-thumb{height:200px;background:var(--bg3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.project-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,0.05) 0%,transparent 60%);transition:opacity 0.3s}
+.project-card:hover .project-thumb::after{opacity:0}
+.project-thumb img{width:100%;height:100%;object-fit:cover}
+.project-thumb .placeholder{font-size:64px;filter:grayscale(0.3);transition:all 0.3s}
+.project-card:hover .project-thumb .placeholder{filter:grayscale(0);transform:scale(1.15)}
+.project-badge{position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+.badge-game{background:rgba(14,165,233,0.15);color:var(--accent2);border:1px solid rgba(14,165,233,0.3)}
+.badge-tool{background:rgba(0,214,143,0.15);color:var(--green);border:1px solid rgba(0,214,143,0.3)}
+.badge-web{background:rgba(253,203,110,0.15);color:#fdcb6e;border:1px solid rgba(253,203,110,0.3)}
+.project-info{padding:20px}
+.project-name{font-size:18px;font-weight:600;margin-bottom:8px}
+.project-desc{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px}
+.project-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.project-tags span{padding:3px 10px;border-radius:6px;font-size:11px;background:var(--bg3);color:var(--text2);font-family:'JetBrains Mono',monospace}
+.project-actions{display:flex;gap:10px}
+.project-actions .btn{padding:8px 18px;font-size:13px;border-radius:8px}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.about-text h3{font-size:24px;font-weight:600;margin-bottom:16px}
+.about-text p{color:var(--text2);margin-bottom:16px;font-size:15px}
+.about-tech{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.tech-pill{padding:6px 16px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace;transition:all 0.2s}
+.tech-pill:hover{border-color:var(--accent);color:var(--accent2)}
+.about-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:40px;position:relative;overflow:hidden}
+.about-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.about-links{display:flex;flex-direction:column;gap:16px;margin-top:24px}
+.about-link{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);transition:all 0.2s;color:var(--text)}
+.about-link:hover{border-color:var(--accent);background:var(--bg3);color:var(--text)}
+.about-link-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg4)}
+
+/* Skills Progress */
+.skills-section{margin-top:48px}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:768px){.skills-grid{grid-template-columns:1fr}}
+.skill-item{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;transition:all 0.3s}
+.skill-item:hover{border-color:var(--accent);transform:translateX(4px)}
+.skill-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0}
+.skill-info{flex:1;min-width:0}
+.skill-name{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.skill-pct{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2)}
+.skill-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative}
+.skill-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width 1.5s cubic-bezier(0.22,1,0.36,1)}
+.skill-fill.animated{width:var(--target)}
+.skill-fill::after{content:'';position:absolute;top:0;right:0;width:30px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15));border-radius:3px}
+
+/* GitHub Graph */
+.github-graph{margin-top:48px}
+.graph-container{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;overflow-x:auto}
+.graph-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.graph-label .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+.graph-grid{display:flex;gap:3px}
+.graph-week{display:flex;flex-direction:column;gap:3px}
+.graph-cell{width:12px;height:12px;border-radius:3px;background:var(--bg3);transition:all 0.2s}
+.graph-cell:hover{transform:scale(1.4);box-shadow:0 0 8px rgba(14,165,233,0.3)}
+.graph-cell.l1{background:rgba(14,165,233,0.2)}
+.graph-cell.l2{background:rgba(14,165,233,0.4)}
+.graph-cell.l3{background:rgba(14,165,233,0.6)}
+.graph-cell.l4{background:var(--accent)}
+.graph-legend{display:flex;align-items:center;gap:6px;margin-top:12px;justify-content:flex-end}
+.graph-legend span{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+
+/* Contact */
+#contact{background:var(--bg2)}
+.contact-box{max-width:600px;margin:0 auto;text-align:center}
+.contact-email{font-family:'JetBrains Mono',monospace;font-size:clamp(16px,2.5vw,22px);color:var(--accent2);padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:12px;display:block;margin-top:24px;transition:all 0.2s;cursor:pointer}
+.contact-email:hover{border-color:var(--accent);background:var(--bg3);color:var(--accent)}
+
+/* Footer */
+footer{padding:40px 24px;border-top:1px solid var(--border);text-align:center}
+footer p{color:var(--text2);font-size:13px}
+footer a{color:var(--accent2)}
+
+/* Mobile */
+@media(max-width:768px){
+.nav-links{gap:20px}
+.nav-links a{font-size:13px}
+.hero-stats{gap:24px}
+.projects-grid{grid-template-columns:1fr}
+.about-grid{grid-template-columns:1fr;gap:32px}
+.hero-btns{flex-direction:column;align-items:center}
+}
+@media(max-width:480px){
+.nav-links{display:none}
+nav{padding:12px 0}
+section{padding:60px 16px}
+}
+
+/* Project Preview Modal */
+.preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity 0.3s}
+.preview-overlay.active{display:flex;opacity:1}
+.preview-modal{width:100%;max-width:1100px;height:85vh;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.6)}
+.preview-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.preview-title{font-weight:600;font-size:16px;display:flex;align-items:center;gap:10px}
+.preview-title .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.preview-close{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.preview-close:hover{background:var(--bg4);color:var(--text);border-color:var(--accent)}
+.preview-iframe{flex:1;border:none;background:#fff}
+
+/* Beliefs */
+.beliefs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-top:48px}
+.belief-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;overflow:hidden;transition:all 0.3s}
+.belief-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(14,165,233,0.08)}
+.belief-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.3s}
+.belief-card:hover::before{opacity:1}
+.belief-icon{font-size:32px;margin-bottom:16px;display:block}
+.belief-card h3{font-size:18px;font-weight:600;margin-bottom:10px}
+.belief-card p{color:var(--text2);font-size:14px;line-height:1.7}
+.belief-quote{max-width:700px;margin:0 auto;text-align:center;padding:40px;font-size:clamp(18px,2.5vw,24px);color:var(--text);font-style:italic;line-height:1.7;position:relative}
+.belief-quote::before,.belief-quote::after{content:'"';font-size:48px;color:var(--accent);font-family:Georgia,serif;line-height:1;position:absolute}
+.belief-quote::before{top:0;left:0}
+.belief-quote::after{bottom:0;right:0;content:'"'}
+
+/* Back to top */
+.back-to-top{position:fixed;bottom:24px;right:24px;width:48px;height:48px;background:var(--accent);border:none;border-radius:50%;color:#fff;font-size:20px;cursor:pointer;z-index:50;transform:translateY(100px);opacity:0;transition:all 0.3s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(14,165,233,0.4)}
+.back-to-top.visible{transform:translateY(0);opacity:1}
+.back-to-top:hover{transform:translateY(-2px) scale(1.1);box-shadow:0 6px 30px rgba(14,165,233,0.5)}
+
+/* Animations */
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity 0.6s,transform 0.6s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+<div class="nav-inner">
+<div class="nav-logo"><span class="dot"></span> RisingForce</div>
+<ul class="nav-links">
+<li><a href="#home" class="active">Home</a></li>
+<li><a href="#projects">Projects</a></li>
+<li><a href="#about">About</a></li>
+<li><a href="#beliefs">Beliefs</a></li>
+<li><a href="#contact">Contact</a></li>
+</ul>
+</div>
+</nav>
+
+<canvas id="particle-canvas"></canvas>
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<section class="hero" id="home">
+<div class="code-bg" id="code-bg"></div>
+<div class="hero-content">
+<div class="hero-badge"><span class="pulse"></span> Open Source Developer</div>
+<h1 id="terminal-text">$ <span class="terminal-cursor">|</span></h1>
+<p>I'm RisingForce — I create games, tools, and programs. Everything I build, I share. Check out my projects below.</p>
+<div class="hero-btns">
+<a href="#projects" class="btn btn-primary">⚡ View Projects</a>
+<a href="https://github.com/risingforce" target="_blank" class="btn btn-secondary">GitHub →</a>
+</div>
+<div class="hero-stats">
+<div class="stat"><div class="stat-num" id="project-count">0</div><div class="stat-label">Projects</div></div>
+<div class="stat"><div class="stat-num">HTML/JS</div><div class="stat-label">Main Stack</div></div>
+<div class="stat"><div class="stat-num">🇸🇪</div><div class="stat-label">Sweden</div></div>
+</div>
+</div>
+</section>
+
+<section id="projects">
+<div class="section-inner">
+<div class="section-header fade-in">
+<div class="section-tag">// Projects</div>
+<h2 class="section-title">What I've Built</h2>
+<p class="section-desc">Games, tools, and experiments. Click to try demos or download the source.</p>
+</div>
+<div class="project-filters fade-in">
+<button class="filter-btn active" data-filter="all">All</button>
+<button class="filter-btn" data-filter="game">Games</button>
+<button class="filter-btn" data-filter="tool">Tools</button>
+<button class="filter-btn" data-filter="web">Web</button>
+</div>
+<div class="projects-grid" id="projects-grid"></div>
+</div>
+</section>
+
+<section id="about">
+<div class="section-inner">
+<div class="section-header fade-in">
+<div class="section-tag">// About</div>
+<h2 class="section-title">Who I Am</h2>
+</div>
+<div class="about-grid">
+<div class="about-text fade-in">
+<h3>Hey, I'm RisingForce 👋</h3>
+<p>I'm a developer from Sweden who loves building things — from browser games to desktop tools. I believe in open source and sharing what you create.</p>
+<p>Most of my projects are single-file HTML/JS apps that run right in your browser. No installs, no dependencies, just open and play.</p>
+<div class="about-tech">
+<span class="tech-pill">JavaScript</span>
+<span class="tech-pill">TypeScript</span>
+<span class="tech-pill">HTML/CSS</span>
+<span class="tech-pill">Three.js</span>
+<span class="tech-pill">Python</span>
+<span class="tech-pill">Node.js</span>
+<span class="tech-pill">C#</span>
+<span class="tech-pill">Java</span>
+<span class="tech-pill">Lua</span>
+<span class="tech-pill">React</span>
+<span class="tech-pill">WebGL</span>
+<span class="tech-pill">Game Dev</span>
+<span class="tech-pill">Git</span>
+</div>
+<div class="skills-section">
+<div class="skills-grid" id="skills-grid"></div>
+</div>
+</div>
+<div class="about-card fade-in">
+<h3 style="margin-bottom:8px">Connect</h3>
+<p style="color:var(--text2);font-size:14px;margin-bottom:16px">Find me on these platforms</p>
+<div class="about-links">
+<a href="https://github.com/risingforce" target="_blank" class="about-link">
+<div class="about-link-icon">🐙</div>
+<div><div style="font-weight:600;font-size:14px">GitHub</div><div style="font-size:12px;color:var(--text2)">github.com/risingforce</div></div>
+</a>
+<a href="https://discord.com/users/risingforce1337" class="about-link">
+<div class="about-link-icon">💬</div>
+<div><div style="font-weight:600;font-size:14px">Discord</div><div style="font-size:12px;color:var(--text2)">risingforce1337</div></div>
+</a>
+<a href="mailto:risingforcebg@icloud.com" class="about-link">
+<div class="about-link-icon">✉️</div>
+<div><div style="font-weight:600;font-size:14px">Email</div><div style="font-size:12px;color:var(--text2)">risingforcebg@icloud.com</div></div>
+</a>
+</div>
+</div>
+</div>
+<div class="github-graph fade-in">
+<div class="graph-container">
+<div class="graph-label"><span class="live-dot"></span> Contribution Activity — Last 6 Months</div>
+<div class="graph-grid" id="github-grid"></div>
+<div class="graph-legend">
+<span>Less</span>
+<div class="graph-cell"></div>
+<div class="graph-cell l1"></div>
+<div class="graph-cell l2"></div>
+<div class="graph-cell l3"></div>
+<div class="graph-cell l4"></div>
+<span>More</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="beliefs">
+<div class="section-inner">
+<div class="section-header fade-in">
+<div class="section-tag">// What I Believe In</div>
+<h2 class="section-title">Open Source Everything</h2>
+<p class="section-desc">Code should be free. Knowledge should be shared. That's the whole point.</p>
+</div>
+<div class="belief-quote fade-in">
+If I build something cool, why would I lock it away? The best software is built in the open, by people who give a damn.
+</div>
+<div class="beliefs-grid">
+<div class="belief-card fade-in">
+<span class="belief-icon">🔓</span>
+<h3>Code Should Be Free</h3>
+<p>Every project I build is open source. No paywalls, no locked features, no "premium tiers." If you can use it, you can see how it works.</p>
+</div>
+<div class="belief-card fade-in">
+<span class="belief-icon">🤝</span>
+<h3>Share What You Know</h3>
+<p>I learned to code from other people sharing their work for free. The least I can do is pass it on. Every line of code I write is a thank you to everyone who came before me.</p>
+</div>
+<div class="belief-card fade-in">
+<span class="belief-icon">🛠️</span>
+<h3>Build for Everyone</h3>
+<p>No installs, no sign-ups, no accounts. My projects run in your browser — open the file and it just works. Software should be accessible to everyone.</p>
+</div>
+<div class="belief-card fade-in">
+<span class="belief-icon">🌍</span>
+<h3>Community Over Competition</h3>
+<p>Open source isn't about being the best — it's about making things better together. Fork my code, improve it, make it yours. That's the whole point.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Project Preview Modal -->
+<div class="preview-overlay" id="preview-overlay">
+<div class="preview-modal">
+<div class="preview-header">
+<div class="preview-title"><span class="dot"></span> <span id="preview-name">Project</span></div>
+<button class="preview-close" id="preview-close">✕</button>
+</div>
+<iframe class="preview-iframe" id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+</div>
+
+<section id="contact">
+<div class="section-inner">
+<div class="contact-box fade-in">
+<div class="section-tag">// Contact</div>
+<h2 class="section-title">Get In Touch</h2>
+<p class="section-desc">Got a question, idea, or just want to say hi? Shoot me an email.</p>
+<a href="mailto:risingforcebg@icloud.com" class="contact-email">risingforcebg@icloud.com</a>
+</div>
+</div>
+</section>
+
+<footer>
+<p>© 2026 RisingForce. Built with ❤️ in Sweden.</p>
+</footer>
+
+<button class="back-to-top" id="back-to-top" title="Back to top">↑</button>
+
+<script>
+// Project data — add your projects here!
+const PROJECTS = [
+{
+name: 'VoxelCraft',
+desc: 'A full Minecraft clone built entirely in the browser with Three.js. Survival mode, creative mode, mobs, crafting, real MC textures — the works.',
+tags: ['Three.js', 'WebGL', 'Game'],
+badge: 'game',
+emoji: '⛏️',
+demo: null, // Add URL when hosted
+download: 'voxelcraft/index.html',
+},
+{
+name: 'Block Blast',
+desc: 'Fast-paced block puzzle game. Drag and drop blocks to clear rows and columns. Addictive one-more-round gameplay.',
+tags: ['HTML5', 'Canvas', 'Game'],
+badge: 'game',
+emoji: '🧱',
+demo: null,
+download: 'blockblast/index.html',
+},
+{
+name: 'Flipper Game',
+desc: 'Classic pinball-style flipper game built with pure JavaScript and Canvas. Physics-based ball movement and flippers.',
+tags: ['JavaScript', 'Canvas', 'Physics'],
+badge: 'game',
+emoji: '🏓',
+demo: null,
+download: 'flipper/index.html',
+},
+{
+name: 'Roblox Obby',
+desc: 'A browser-based obstacle course game inspired by Roblox obbies. Jump, dodge, and make it to the end.',
+tags: ['Three.js', 'WebGL', 'Game'],
+badge: 'game',
+emoji: '🏃',
+demo: null,
+download: 'obby/index.html',
+},
+{
+name: 'Recipe Site',
+desc: 'Clean recipe browsing app with search, categories, and step-by-step instructions. Built as a single-page app.',
+tags: ['HTML/CSS', 'JavaScript', 'Web App'],
+badge: 'web',
+emoji: '🍳',
+demo: null,
+download: 'recipes/index.html',
+},
+];
+
+// Render projects
+const grid = document.getElementById('projects-grid');
+document.getElementById('project-count').textContent = PROJECTS.length;
+
+PROJECTS.forEach((p, i) => {
+const card = document.createElement('div');
+card.className = 'project-card fade-in';
+card.style.transitionDelay = (i * 0.1) + 's';
+card.dataset.category = p.badge;
+
+const badgeClass = p.badge === 'game' ? 'badge-game' : p.badge === 'tool' ? 'badge-tool' : 'badge-web';
+
+const previewFile = p.download || p.demo || null;
+
+card.innerHTML = `
+<div class="project-thumb">
+<span class="placeholder">${p.emoji}</span>
+<span class="project-badge ${badgeClass}">${p.badge}</span>
+</div>
+<div class="project-info">
+<div class="project-name">${p.name}</div>
+<div class="project-desc">${p.desc}</div>
+<div class="project-tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
+<div class="project-actions">
+${previewFile ? `<a href="#" class="btn btn-primary preview-btn" data-src="${previewFile}" data-name="${p.name}" onclick="event.preventDefault();event.stopPropagation();openPreview('${previewFile}','${p.name}')">▶ Preview</a>` : ''}
+${p.download ? `<a href="${p.download}" download class="btn btn-secondary" onclick="event.stopPropagation()">↓ Download</a>` : ''}
+</div>
+</div>`;
+
+// Click anywhere on card to preview
+if (previewFile) {
+card.addEventListener('click', () => openPreview(previewFile, p.name));
+}
+
+// Card tilt effect
+card.addEventListener('mousemove', (e) => {
+const rect = card.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+const centerX = rect.width / 2;
+const centerY = rect.height / 2;
+const rotateX = (y - centerY) / 20;
+const rotateY = (centerX - x) / 20;
+card.style.transform = `translateY(-4px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+});
+card.addEventListener('mouseleave', () => {
+card.style.transform = 'translateY(-4px) perspective(1000px) rotateX(0deg) rotateY(0deg)';
+});
+
+grid.appendChild(card);
+});
+
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Nav scroll effect
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Active nav link
+const sections = document.querySelectorAll('section, .hero');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+let current = '';
+sections.forEach(s => {
+const top = s.offsetTop - 100;
+if (window.scrollY >= top) current = s.getAttribute('id') || 'home';
+});
+navLinks.forEach(a => {
+a.classList.remove('active');
+if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+});
+});
+
+// Preview modal
+const previewOverlay = document.getElementById('preview-overlay');
+const previewIframe = document.getElementById('preview-iframe');
+const previewName = document.getElementById('preview-name');
+const previewClose = document.getElementById('preview-close');
+
+function openPreview(src, name) {
+previewName.textContent = name;
+previewIframe.src = src;
+previewOverlay.classList.add('active');
+document.body.style.overflow = 'hidden';
+}
+
+function closePreview() {
+previewOverlay.classList.remove('active');
+previewIframe.src = '';
+document.body.style.overflow = '';
+}
+
+previewClose.addEventListener('click', closePreview);
+previewOverlay.addEventListener('click', (e) => {
+if (e.target === previewOverlay) closePreview();
+});
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape' && previewOverlay.classList.contains('active')) closePreview();
+});
+
+// ===== NEW FEATURES =====
+
+// Terminal typing effect
+const terminalEl = document.getElementById('terminal-text');
+const messages = [
+'$ npm run build',
+'$ git push origin main', 
+'$ ./build_something_cool.sh',
+'$ echo "Building cool stuff with code"'
+];
+let msgIndex = 0, charIndex = 0;
+const typeSpeed = 80, eraseSpeed = 40, pauseTime = 2000;
+
+function typeWriter() {
+const currentMsg = messages[msgIndex];
+if (charIndex < currentMsg.length) {
+terminalEl.innerHTML = currentMsg.substring(0, charIndex + 1) + '<span class="terminal-cursor">|</span>';
+charIndex++;
+setTimeout(typeWriter, typeSpeed);
+} else {
+setTimeout(() => {
+eraseText();
+}, pauseTime);
+}
+}
+
+function eraseText() {
+const currentMsg = messages[msgIndex];
+if (charIndex > 2) { // Keep "$ "
+terminalEl.innerHTML = currentMsg.substring(0, charIndex) + '<span class="terminal-cursor">|</span>';
+charIndex--;
+setTimeout(eraseText, eraseSpeed);
+} else {
+msgIndex = (msgIndex + 1) % messages.length;
+charIndex = 2; // Start after "$ "
+setTimeout(typeWriter, 500);
+}
+}
+
+// Start typing after a brief delay
+setTimeout(typeWriter, 1000);
+
+// Project filters
+const filterBtns = document.querySelectorAll('.filter-btn');
+const projectCards = document.querySelectorAll('.project-card');
+
+filterBtns.forEach(btn => {
+btn.addEventListener('click', () => {
+filterBtns.forEach(b => b.classList.remove('active'));
+btn.classList.add('active');
+const filter = btn.dataset.filter;
+
+document.querySelectorAll('.project-card').forEach(card => {
+const category = card.dataset.category;
+if (filter === 'all' || category === filter) {
+card.classList.remove('filtered-out');
+} else {
+card.classList.add('filtered-out');
+}
+});
+});
+});
+
+// Card tilt effect (attached in project rendering loop)
+
+// Back to top button
+const backToTop = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+if (window.scrollY > 300) {
+backToTop.classList.add('visible');
+} else {
+backToTop.classList.remove('visible');
+}
+});
+backToTop.addEventListener('click', () => {
+window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== VISUAL FLEX =====
+
+// Cursor glow follow
+const cursorGlow = document.getElementById('cursor-glow');
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', (e) => {
+mouseX = e.clientX; mouseY = e.clientY;
+cursorGlow.style.left = mouseX + 'px';
+cursorGlow.style.top = mouseY + 'px';
+});
+
+// Floating code background
+const codeSnippets = [
+'const app = createServer();',
+'function render(scene) {',
+'  return mesh.update();',
+'import { useState } from "react";',
+'git commit -m "ship it"',
+'for (let i = 0; i < n; i++) {',
+'export default class Game {',
+'  this.velocity += gravity * dt;',
+'const ctx = canvas.getContext("2d");',
+'npm install --save three',
+'if (collision) bounce();',
+'async function fetchData() {',
+'  world.generate(seed);',
+'player.health -= damage;',
+'return <Component {...props} />;',
+'socket.on("connect", () => {});',
+'  scene.add(new THREE.Mesh(geo, mat));',
+'while (running) update();',
+'docker compose up -d',
+'SELECT * FROM projects;',
+];
+
+const codeBg = document.getElementById('code-bg');
+codeSnippets.forEach((snippet, i) => {
+const el = document.createElement('div');
+el.className = 'code-line';
+el.textContent = snippet;
+el.style.left = (Math.random() * 90) + '%';
+el.style.animationDuration = (15 + Math.random() * 25) + 's';
+el.style.animationDelay = (-Math.random() * 30) + 's';
+el.style.fontSize = (11 + Math.random() * 4) + 'px';
+codeBg.appendChild(el);
+});
+
+// Particle system
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+const PARTICLE_COUNT = 60;
+
+function resizeParticles() {
+pCanvas.width = window.innerWidth;
+pCanvas.height = window.innerHeight;
+}
+resizeParticles();
+window.addEventListener('resize', resizeParticles);
+
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+particles.push({
+x: Math.random() * window.innerWidth,
+y: Math.random() * window.innerHeight,
+vx: (Math.random() - 0.5) * 0.3,
+vy: (Math.random() - 0.5) * 0.3,
+r: Math.random() * 2 + 0.5,
+o: Math.random() * 0.3 + 0.05
+});
+}
+
+function animateParticles() {
+pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+const w = pCanvas.width, h = pCanvas.height;
+
+particles.forEach(p => {
+// Drift towards mouse slightly
+const dx = mouseX - p.x, dy = mouseY - p.y;
+const dist = Math.sqrt(dx*dx + dy*dy);
+if (dist < 300) {
+p.vx += dx * 0.00003;
+p.vy += dy * 0.00003;
+}
+p.x += p.vx; p.y += p.vy;
+p.vx *= 0.999; p.vy *= 0.999;
+if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+
+pCtx.beginPath();
+pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+pCtx.fillStyle = `rgba(14,165,233,${p.o})`;
+pCtx.fill();
+});
+
+// Draw connections
+particles.forEach((a, i) => {
+for (let j = i + 1; j < particles.length; j++) {
+const b = particles[j];
+const dx = a.x - b.x, dy = a.y - b.y;
+const dist = Math.sqrt(dx*dx + dy*dy);
+if (dist < 150) {
+pCtx.beginPath();
+pCtx.moveTo(a.x, a.y);
+pCtx.lineTo(b.x, b.y);
+pCtx.strokeStyle = `rgba(14,165,233,${0.06 * (1 - dist/150)})`;
+pCtx.lineWidth = 0.5;
+pCtx.stroke();
+}
+}
+});
+
+requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// GitHub contribution graph (generated)
+const ghGrid = document.getElementById('github-grid');
+const weeks = 26; // 6 months
+for (let w = 0; w < weeks; w++) {
+const week = document.createElement('div');
+week.className = 'graph-week';
+for (let d = 0; d < 7; d++) {
+const cell = document.createElement('div');
+cell.className = 'graph-cell';
+// More activity on weekdays, recent weeks hotter
+const dayBoost = (d > 0 && d < 6) ? 0.3 : 0;
+const recentBoost = (w / weeks) * 0.4;
+const r = Math.random() + dayBoost + recentBoost;
+if (r > 1.1) cell.classList.add('l4');
+else if (r > 0.9) cell.classList.add('l3');
+else if (r > 0.7) cell.classList.add('l2');
+else if (r > 0.5) cell.classList.add('l1');
+// Tooltip
+const date = new Date();
+date.setDate(date.getDate() - ((weeks - w) * 7 + (6 - d)));
+cell.title = date.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+week.appendChild(cell);
+}
+ghGrid.appendChild(week);
+}
+
+// Skills progress bars
+const SKILLS = [
+{ name: 'JavaScript', icon: '⚡', pct: 92 },
+{ name: 'HTML / CSS', icon: '🎨', pct: 90 },
+{ name: 'Three.js / WebGL', icon: '🧊', pct: 80 },
+{ name: 'Python', icon: '🐍', pct: 75 },
+{ name: 'Node.js', icon: '🟢', pct: 72 },
+{ name: 'TypeScript', icon: '🔷', pct: 68 },
+{ name: 'React', icon: '⚛️', pct: 65 },
+{ name: 'C#', icon: '🎯', pct: 55 },
+{ name: 'Java', icon: '☕', pct: 50 },
+{ name: 'Lua', icon: '🌙', pct: 60 },
+{ name: 'Game Dev', icon: '🎮', pct: 85 },
+{ name: 'Git / DevOps', icon: '🔧', pct: 70 },
+];
+
+const skillsGrid = document.getElementById('skills-grid');
+SKILLS.forEach(s => {
+const el = document.createElement('div');
+el.className = 'skill-item fade-in';
+el.innerHTML = `
+<div class="skill-icon">${s.icon}</div>
+<div class="skill-info">
+<div class="skill-name">${s.name}<span class="skill-pct">${s.pct}%</span></div>
+<div class="skill-bar"><div class="skill-fill" style="--target:${s.pct}%"></div></div>
+</div>`;
+skillsGrid.appendChild(el);
+observer.observe(el);
+});
+
+// Animate skill bars when visible
+const skillObserver = new IntersectionObserver((entries) => {
+entries.forEach(e => {
+if (e.isIntersecting) {
+const fill = e.target.querySelector('.skill-fill');
+if (fill) setTimeout(() => fill.classList.add('animated'), 100);
+}
+});
+}, { threshold: 0.3 });
+document.querySelectorAll('.skill-item').forEach(el => skillObserver.observe(el));
+
+// Stat counter animation
+const projectCount = document.getElementById('project-count');
+const target = PROJECTS.length;
+let count = 0;
+const countInterval = setInterval(() => {
+count++;
+projectCount.textContent = count;
+if (count >= target) clearInterval(countInterval);
+}, 150);
+
+// Copy email on click
+document.querySelector('.contact-email').addEventListener('click', (e) => {
+e.preventDefault();
+navigator.clipboard.writeText('risingforcebg@icloud.com').then(() => {
+const el = e.target;
+const orig = el.textContent;
+el.textContent = '✓ Copied to clipboard!';
+el.style.borderColor = 'var(--green)';
+el.style.color = 'var(--green)';
+setTimeout(() => { el.textContent = orig; el.style.borderColor = ''; el.style.color = ''; }, 2000);
+});
+});
+</script>
+</body>
+</html>
