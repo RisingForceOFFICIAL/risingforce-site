@@ -575,9 +575,9 @@ ${p.download ? `<a href="${p.download}" target="_blank" class="btn btn-secondary
 </div>
 </div>`;
 
-// Click anywhere on card to preview
-if (previewFile) {
-card.addEventListener('click', () => openPreview(previewFile, p.name));
+// Click anywhere on card to open in new tab
+if (p.demo) {
+card.addEventListener('click', () => window.open(p.demo, '_blank'));
 }
 
 // Card tilt effect
