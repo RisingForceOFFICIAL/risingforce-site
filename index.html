@@ -552,8 +552,8 @@ card.innerHTML = `
 <div class="project-desc">${p.desc}</div>
 <div class="project-tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
 <div class="project-actions">
-${previewFile ? `<a href="#" class="btn btn-primary preview-btn" data-src="${previewFile}" data-name="${p.name}" onclick="event.preventDefault();event.stopPropagation();openPreview('${previewFile}','${p.name}')">▶ Preview</a>` : ''}
-${p.download ? `<a href="${p.download}" download class="btn btn-secondary" onclick="event.stopPropagation()">↓ Download</a>` : ''}
+${p.demo ? `<a href="${p.demo}" target="_blank" class="btn btn-primary" onclick="event.stopPropagation()">▶ Play</a>` : ''}
+${p.download ? `<a href="${p.download}" target="_blank" class="btn btn-secondary" onclick="event.stopPropagation()">GitHub</a>` : ''}
 </div>
 </div>`;
 
