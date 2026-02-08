@@ -82,14 +82,20 @@ section{padding:100px 24px}
 .section-desc{color:var(--text2);max-width:600px;margin:0 auto;font-size:16px}
 
 /* Projects */
-.project-filters{display:flex;justify-content:center;gap:12px;margin-bottom:48px}
+.project-controls{display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:48px;flex-wrap:wrap}
+.project-filters{display:flex;gap:12px}
 .filter-btn{padding:8px 24px;border-radius:24px;font-size:14px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.3s;font-family:'JetBrains Mono',monospace}
 .filter-btn:hover{border-color:var(--accent);color:var(--text)}
 .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sort-control{display:flex;align-items:center;gap:8px}
+.sort-control label{font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.sort-select{padding:8px 16px;border-radius:12px;font-size:13px;font-weight:500;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-family:'JetBrains Mono',monospace;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;min-width:160px}
+.sort-select:hover{border-color:var(--accent)}
+.sort-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,0.2)}
 .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:24px}
-.project-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.4s;cursor:pointer;position:relative;transform-style:preserve-3d;perspective:1000px}
+.project-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.3s,transform 0.3s;cursor:pointer;position:relative;transform-style:preserve-3d;perspective:1000px}
 .project-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 40px rgba(14,165,233,0.1)}
-.project-card.filtered-out{opacity:0 !important;transform:scale(0.8);pointer-events:none;height:0;margin:0;padding:0;border:none;overflow:hidden}
+.project-card.filtered-out{display:none}
 .project-thumb{height:200px;background:var(--bg3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .project-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,0.05) 0%,transparent 60%);transition:opacity 0.3s}
 .project-card:hover .project-thumb::after{opacity:0}
@@ -258,10 +264,22 @@ section{padding:60px 16px}
 <h2 class="section-title">What I've Built</h2>
 <p class="section-desc">Games, tools, and experiments. Click to try demos or download the source.</p>
 </div>
-<div class="project-filters fade-in">
+<div class="project-controls fade-in">
+<div class="project-filters">
 <button class="filter-btn active" data-filter="all">All</button>
 <button class="filter-btn" data-filter="game">Games</button>
 <button class="filter-btn" data-filter="tool">Tools</button>
+</div>
+<div class="sort-control">
+<label>Sort:</label>
+<select class="sort-select" id="sort-select">
+<option value="newest">Newest First</option>
+<option value="oldest">Oldest First</option>
+<option value="az">A → Z</option>
+<option value="za">Z → A</option>
+<option value="popular">Most Popular</option>
+</select>
+</div>
 </div>
 <div class="projects-grid" id="projects-grid"></div>
 </div>
@@ -396,6 +414,55 @@ section{padding:60px 16px}
 
 <script>
 // Project data — RF branded projects
+// ===== SOUND EFFECTS =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+
+function playSound(type) {
+  initAudio();
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  if (type === 'click') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  } else if (type === 'filter') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  } else if (type === 'sort') {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.2);
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  } else if (type === 'hover') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, now);
+    gain.gain.setValueAtTime(0.03, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+}
+
 const PROJECTS = [
 {
 name: 'RFCraft',
@@ -405,6 +472,8 @@ badge: 'game',
 emoji: '⛏️',
 demo: 'https://risingforceofficial.github.io/RFCraft/',
 download: 'https://github.com/InterSpaceStudios/voxelcraft',
+date: '2026-02-01',
+popularity: 100,
 },
 {
 name: 'RFBlast',
@@ -414,6 +483,8 @@ badge: 'game',
 emoji: '🧱',
 demo: 'https://risingforceofficial.github.io/RFBlast/',
 download: 'https://github.com/InterSpaceStudios/block-blast',
+date: '2026-01-28',
+popularity: 85,
 },
 {
 name: 'RFQR',
@@ -423,6 +494,8 @@ badge: 'tool',
 emoji: '📱',
 demo: 'https://risingforceofficial.github.io/RFQR/',
 download: 'https://github.com/InterSpaceStudios/link2qr',
+date: '2026-01-20',
+popularity: 70,
 },
 {
 name: 'RFUnits',
@@ -432,6 +505,8 @@ badge: 'tool',
 emoji: '📐',
 demo: 'https://risingforceofficial.github.io/RFUnits/',
 download: 'https://github.com/InterSpaceStudios/unitflow',
+date: '2026-01-18',
+popularity: 55,
 },
 {
 name: 'RFHash',
@@ -441,6 +516,8 @@ badge: 'tool',
 emoji: '🔐',
 demo: 'https://risingforceofficial.github.io/RFHash/',
 download: 'https://github.com/InterSpaceStudios/hashflow',
+date: '2026-01-15',
+popularity: 60,
 },
 {
 name: 'RFSudoku',
@@ -450,6 +527,8 @@ badge: 'game',
 emoji: '🧠',
 demo: 'https://risingforceofficial.github.io/RFSudoku/',
 download: 'https://github.com/RisingForceOFFICIAL/RFSudoku',
+date: '2026-01-31',
+popularity: 90,
 },
 {
 name: 'RF2048',
@@ -459,6 +538,8 @@ badge: 'game',
 emoji: '🧮',
 demo: 'https://risingforceofficial.github.io/RF2048/',
 download: 'https://github.com/RisingForceOFFICIAL/rf2048',
+date: '2026-01-31',
+popularity: 80,
 },
 {
 name: 'RFSnake',
@@ -468,6 +549,8 @@ badge: 'game',
 emoji: '🐍',
 demo: 'https://risingforceofficial.github.io/RFSnake/',
 download: 'https://github.com/RisingForceOFFICIAL/rfsnake',
+date: '2026-01-31',
+popularity: 75,
 },
 {
 name: 'RFColor',
@@ -477,6 +560,8 @@ badge: 'tool',
 emoji: '🎨',
 demo: 'https://risingforceofficial.github.io/RFColor/',
 download: 'https://github.com/RisingForceOFFICIAL/rfcolor',
+date: '2026-01-31',
+popularity: 65,
 },
 {
 name: 'RFTimer',
@@ -486,6 +571,8 @@ badge: 'tool',
 emoji: '⏱️',
 demo: 'https://risingforceofficial.github.io/RFTimer/',
 download: 'https://github.com/RisingForceOFFICIAL/rftimer',
+date: '2026-01-31',
+popularity: 50,
 },
 {
 name: 'RFMemory',
@@ -495,6 +582,8 @@ badge: 'game',
 emoji: '🃏',
 demo: 'https://risingforceofficial.github.io/RFMemory/',
 download: 'https://github.com/RisingForceOFFICIAL/rfmemory',
+date: '2026-01-31',
+popularity: 70,
 },
 {
 name: 'RFNotes',
@@ -504,6 +593,8 @@ badge: 'tool',
 emoji: '📝',
 demo: 'https://risingforceofficial.github.io/RFNotes/',
 download: 'https://github.com/RisingForceOFFICIAL/rfnotes',
+date: '2026-01-31',
+popularity: 55,
 },
 {
 name: 'RFBeats',
@@ -513,6 +604,8 @@ badge: 'tool',
 emoji: '🎵',
 demo: 'https://risingforceofficial.github.io/RFBeats/',
 download: 'https://github.com/RisingForceOFFICIAL/rfbeats',
+date: '2026-01-31',
+popularity: 72,
 },
 {
 name: 'RFType',
@@ -522,6 +615,8 @@ badge: 'game',
 emoji: '🔤',
 demo: 'https://risingforceofficial.github.io/RFType/',
 download: 'https://github.com/RisingForceOFFICIAL/rftype',
+date: '2026-01-31',
+popularity: 68,
 },
 {
 name: 'RFView',
@@ -531,6 +626,8 @@ badge: 'tool',
 emoji: '👁️',
 demo: 'https://risingforceofficial.github.io/RFView/',
 download: 'https://github.com/RisingForceOFFICIAL/rfview',
+date: '2026-02-02',
+popularity: 62,
 },
 {
 name: 'RFChaos',
@@ -540,12 +637,16 @@ badge: 'game',
 emoji: '🌀',
 demo: 'https://risingforceofficial.github.io/RFChaos/',
 download: 'https://github.com/RisingForceOFFICIAL/RFChaos',
+date: '2026-02-03',
+popularity: 45,
 },
 {
 name: 'RFCSS',
 desc: 'CSS beautifier and minifier with syntax highlighting. Format messy CSS or compress it for production with live size comparison.',
 tags: ['JavaScript', 'CSS', 'Tool'],
 badge: 'tool',
+date: '2026-01-30',
+popularity: 58,
 emoji: '🎨',
 demo: 'https://risingforceofficial.github.io/RFCSS/',
 download: 'https://github.com/RisingForceOFFICIAL/RFCSS',
@@ -558,6 +659,8 @@ badge: 'tool',
 emoji: '✨',
 demo: 'https://risingforceofficial.github.io/RFAnimate/',
 download: 'https://github.com/RisingForceOFFICIAL/RFAnimate',
+date: '2026-01-30',
+popularity: 64,
 },
 {
 name: 'RFCube',
@@ -567,6 +670,8 @@ badge: 'game',
 emoji: '⬛',
 demo: 'https://risingforceofficial.github.io/RFCube/',
 download: 'https://github.com/RisingForceOFFICIAL/RFCube',
+date: '2026-02-04',
+popularity: 52,
 },
 {
 name: 'RFPong',
@@ -576,6 +681,8 @@ badge: 'game',
 emoji: '🏓',
 demo: 'https://risingforceofficial.github.io/RFPong/',
 download: 'https://github.com/RisingForceOFFICIAL/RFPong',
+date: '2026-02-05',
+popularity: 78,
 },
 {
 name: 'RFChess',
@@ -585,18 +692,41 @@ badge: 'game',
 emoji: '♟️',
 demo: 'https://risingforceofficial.github.io/RFChess/',
 download: 'https://github.com/RisingForceOFFICIAL/RFChess',
+date: '2026-02-07',
+popularity: 82,
 },
 ];
+
+// Sorting and filtering state
+let currentFilter = 'all';
+let currentSort = 'newest';
 
 // Render projects
 const grid = document.getElementById('projects-grid');
 document.getElementById('project-count').textContent = PROJECTS.length;
 
-PROJECTS.forEach((p, i) => {
-const card = document.createElement('div');
-card.className = 'project-card fade-in';
-card.style.transitionDelay = (i * 0.1) + 's';
-card.dataset.category = p.badge;
+function sortProjects(projects, sortBy) {
+  const sorted = [...projects];
+  switch(sortBy) {
+    case 'newest': return sorted.sort((a,b) => new Date(b.date) - new Date(a.date));
+    case 'oldest': return sorted.sort((a,b) => new Date(a.date) - new Date(b.date));
+    case 'az': return sorted.sort((a,b) => a.name.localeCompare(b.name));
+    case 'za': return sorted.sort((a,b) => b.name.localeCompare(a.name));
+    case 'popular': return sorted.sort((a,b) => b.popularity - a.popularity);
+    default: return sorted;
+  }
+}
+
+function renderProjects() {
+  grid.innerHTML = '';
+  let filtered = currentFilter === 'all' ? PROJECTS : PROJECTS.filter(p => p.badge === currentFilter);
+  let sorted = sortProjects(filtered, currentSort);
+  
+  sorted.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'project-card fade-in';
+    card.style.transitionDelay = (i * 0.05) + 's';
+    card.dataset.category = p.badge;
 
 const badgeClass = p.badge === 'game' ? 'badge-game' : p.badge === 'tool' ? 'badge-tool' : 'badge-web';
 
@@ -637,13 +767,23 @@ card.addEventListener('mouseleave', () => {
 card.style.transform = 'translateY(-4px) perspective(1000px) rotateX(0deg) rotateY(0deg)';
 });
 
-grid.appendChild(card);
-});
+    // Hover sound
+    card.addEventListener('mouseenter', () => playSound('hover'));
+    
+    grid.appendChild(card);
+  });
+  
+  // Re-observe fade-in elements
+  document.querySelectorAll('.project-card.fade-in').forEach(el => observer.observe(el));
+}
 
 // Scroll animations
 const observer = new IntersectionObserver((entries) => {
 entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1 });
+
+// Initial render
+renderProjects();
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
 // Nav scroll effect
@@ -738,26 +878,30 @@ setTimeout(typeWriter, 1000);
 
 // Project filters
 const filterBtns = document.querySelectorAll('.filter-btn');
-const projectCards = document.querySelectorAll('.project-card');
+const sortSelect = document.getElementById('sort-select');
 
 filterBtns.forEach(btn => {
-btn.addEventListener('click', () => {
-filterBtns.forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-const filter = btn.dataset.filter;
-
-document.querySelectorAll('.project-card').forEach(card => {
-const category = card.dataset.category;
-if (filter === 'all' || category === filter) {
-card.classList.remove('filtered-out');
-} else {
-card.classList.add('filtered-out');
-}
-});
-});
+  btn.addEventListener('click', () => {
+    playSound('filter');
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderProjects();
+  });
 });
 
-// Card tilt effect (attached in project rendering loop)
+// Sorting
+sortSelect.addEventListener('change', () => {
+  playSound('sort');
+  currentSort = sortSelect.value;
+  renderProjects();
+});
+
+// Sound on button hover
+filterBtns.forEach(btn => {
+  btn.addEventListener('mouseenter', () => playSound('hover'));
+});
+sortSelect.addEventListener('mouseenter', () => playSound('hover'));
 
 // Back to top button
 const backToTop = document.getElementById('back-to-top');
