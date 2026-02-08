@@ -244,7 +244,8 @@ section{padding:60px 16px}
 </div>
 <div class="hero-stats">
 <div class="stat"><div class="stat-num" id="project-count">0</div><div class="stat-label">Projects</div></div>
-<div class="stat"><div class="stat-num">HTML/JS</div><div class="stat-label">Main Stack</div></div>
+<div class="stat"><div class="stat-num" id="unique-visitors">—</div><div class="stat-label">Unique Visitors</div></div>
+<div class="stat"><div class="stat-num" id="total-views">—</div><div class="stat-label">Page Views</div></div>
 <div class="stat"><div class="stat-num">🇸🇪</div><div class="stat-label">Sweden</div></div>
 </div>
 </div>
@@ -261,7 +262,6 @@ section{padding:60px 16px}
 <button class="filter-btn active" data-filter="all">All</button>
 <button class="filter-btn" data-filter="game">Games</button>
 <button class="filter-btn" data-filter="tool">Tools</button>
-<button class="filter-btn" data-filter="web">Web</button>
 </div>
 <div class="projects-grid" id="projects-grid"></div>
 </div>
@@ -340,9 +340,6 @@ section{padding:60px 16px}
 <div class="section-tag">// What I Believe In</div>
 <h2 class="section-title">Open Source Everything</h2>
 <p class="section-desc">Code should be free. Knowledge should be shared. That's the whole point.</p>
-</div>
-<div class="belief-quote fade-in">
-If I build something cool, why would I lock it away? The best software is built in the open, by people who give a damn.
 </div>
 <div class="beliefs-grid">
 <div class="belief-card fade-in">
@@ -979,6 +976,69 @@ el.style.color = 'var(--green)';
 setTimeout(() => { el.textContent = orig; el.style.borderColor = ''; el.style.color = ''; }, 2000);
 });
 });
+
+// ===== VISITOR COUNTERS =====
+const COUNTER_NAMESPACE = 'risingforce-site';
+
+// Format number with K/M suffix
+function formatCount(n) {
+if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+return n.toString();
+}
+
+// Animate counter
+function animateCounter(el, target) {
+const duration = 1500;
+const start = performance.now();
+const startVal = 0;
+function update(now) {
+const elapsed = now - start;
+const progress = Math.min(elapsed / duration, 1);
+const eased = 1 - Math.pow(1 - progress, 3);
+el.textContent = formatCount(Math.floor(startVal + (target - startVal) * eased));
+if (progress < 1) requestAnimationFrame(update);
+}
+requestAnimationFrame(update);
+}
+
+// Load and update counters using CountAPI
+async function initCounters() {
+const uniqueEl = document.getElementById('unique-visitors');
+const viewsEl = document.getElementById('total-views');
+
+try {
+// Total page views - always increment
+const viewsRes = await fetch(`https://api.countapi.xyz/hit/${COUNTER_NAMESPACE}/pageviews`);
+const viewsData = await viewsRes.json();
+if (viewsData.value) animateCounter(viewsEl, viewsData.value);
+
+// Unique visitors - only increment if first visit
+const hasVisited = localStorage.getItem('rf-visited');
+if (!hasVisited) {
+localStorage.setItem('rf-visited', 'true');
+const uniqueRes = await fetch(`https://api.countapi.xyz/hit/${COUNTER_NAMESPACE}/unique-visitors`);
+const uniqueData = await uniqueRes.json();
+if (uniqueData.value) animateCounter(uniqueEl, uniqueData.value);
+} else {
+// Just get current count without incrementing
+const uniqueRes = await fetch(`https://api.countapi.xyz/get/${COUNTER_NAMESPACE}/unique-visitors`);
+const uniqueData = await uniqueRes.json();
+if (uniqueData.value) animateCounter(uniqueEl, uniqueData.value);
+}
+} catch (err) {
+// Fallback to localStorage-only counts if API fails
+const localViews = parseInt(localStorage.getItem('rf-views') || '0') + 1;
+localStorage.setItem('rf-views', localViews);
+viewsEl.textContent = formatCount(localViews);
+
+const localUnique = localStorage.getItem('rf-unique') ? 1 : 1;
+localStorage.setItem('rf-unique', 'true');
+uniqueEl.textContent = formatCount(localUnique);
+}
+}
+
+initCounters();
 </script>
 </body>
 </html>
